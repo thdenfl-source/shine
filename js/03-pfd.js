@@ -100,7 +100,7 @@ function drawPFD() {
   if (typeof acIs === 'function' && acIs('b206') && typeof b206Draw === 'function') {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-    b206Draw(ctx, 0, 0, W, Math.max(40, H - CTRL_H));
+    b206Draw(ctx, 0, 0, W, b206RoomH(cvs, H, CTRL_H));
     return;
   }
   const L = pfdLayout(W, H, CTRL_H);

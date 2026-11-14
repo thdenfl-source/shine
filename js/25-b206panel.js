@@ -448,6 +448,24 @@ function b206Draw(g, x, y, w, h) {
   _b206Text(g, 'BELL 206B-3', 918, 300, 12, '#33393f'); _b206Text(g, 'JETRANGER III', 918, 316, 10, '#33393f');
   g.restore();
 }
+// PFD 창에서 판이 쓸 높이(캔버스 px) — 소프트키 줄(#pfd-sk) · FCP(.ctrl-bar)가 캔버스 위로 실제로 시작하는 자리를 재서 그 위까지만.
+// FCP 높이(CTRL_H) 한 값으로만 빼면 기기 · 배율에 따라 판 아래쪽이 FCP 에 가려졌다(태블릿 1920 폭 화면)
+function b206RoomH(canvas, H, ctrlH) {
+  let room = H - (ctrlH || 0);
+  try {
+    const cr = canvas.getBoundingClientRect();
+    if (cr.height > 0) {
+      const k = canvas.height / cr.height;
+      let top = cr.bottom;
+      canvas.ownerDocument.querySelectorAll('#pfd-sk, .ctrl-bar').forEach(e => {
+        const r = e.getBoundingClientRect();
+        if (r.height > 0 && r.top > cr.top + 20 && r.top < top && r.left < cr.right - 1 && r.right > cr.left + 1) top = r.top;
+      });
+      room = Math.min(room, (top - cr.top) * k);
+    }
+  } catch (e) { /* 재지 못하면 FCP 높이로 */ }
+  return Math.max(40, room);
+}
 // 아무 캔버스에 판을 가득 그린다(Cockpit 모드 계기판 자리 · 팝아웃)
 function b206DrawTo(canvas) {
   const g = canvas.getContext('2d');

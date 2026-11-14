@@ -59,6 +59,31 @@ export async function run(page, t) {
   t.ok(C.n === 1 && C.w >= 1000 && C.panel > 50, `Cockpit 모드 — 가운데 아날로그 계기판 하나 (캔버스 ${C.n}개 · 너비 ${C.w} · 판 픽셀 ${C.panel})`);
   t.ok(C.pop === 'pfd', '계기판을 누르면 가운데에 크게 뜬다');
 
+  // PFD 창 — 판이 소프트키 줄 · FCP 위에서 끝난다(가려지지 않는다)
+  const R = await page.evaluate(async () => {
+    const w = ms => new Promise(r => setTimeout(r, ms));
+    exitSolo(); await w(300); selectPanel('left', 'pfd'); await w(400);
+    const cr = cvs.getBoundingClientRect(), k = cvs.height / cr.height;
+    const sk = document.getElementById('pfd-sk').getBoundingClientRect();
+    return { room: b206RoomH(cvs, cvs.height, 0), want: (sk.top - cr.top) * k };
+  });
+  t.ok(Math.abs(R.room - R.want) < 2, `PFD 창 — 판이 소프트키 · FCP 위까지만 (판 높이 ${Math.round(R.room)} · 소프트키 위 ${Math.round(R.want)})`);
+
+  // 오른쪽 창에 UPPER(상부 콘솔)를 띄운 채 Cockpit 모드로 — 상부 콘솔이 조종석 칸으로 옮겨진다(숨은 창에 남아 검게 비던 것)
+  const U = await page.evaluate(async () => {
+    const w = ms => new Promise(r => setTimeout(r, ms));
+    selectPanel('right', 'ovhd'); selectPanel('right', 'lcon'); selectPanel('right', 'ovhd'); await w(400);
+    cockpitStart(); await w(1500);
+    const o = { ovhd: document.getElementById('ovhd-wrap').parentElement.id, h: document.getElementById('ovhd-wrap').getBoundingClientRect().height };
+    exitSolo(); await w(500);
+    o.back = document.getElementById('ovhd-wrap').parentElement.id;
+    try { if (simModeOn) toggleSimMode(false); } catch (e) { /* 그만 */ }
+    S.alt = 0; S.spd = 0; S.running = false;
+    return o;
+  });
+  t.ok(U.ovhd === 'ck-mini-ovhd' && U.h > 20, `UPPER 를 띄운 채 Cockpit 모드 — 상부 콘솔이 조종석에 보인다 (${U.ovhd} · 높이 ${Math.round(U.h)})`);
+  t.ok(U.back === 'right-panel', `분할 화면으로 돌아오면 오른쪽 창으로 돌아간다 (${U.back})`);
+
   // 기종 바꾸기 — 적어 두기만(다시 불러오지 않고)
   const P = await page.evaluate(() => { setAircraftType('aw189', false); const a = localStorage.getItem('shineAc'); setAircraftType('b206', false); return { a, b: localStorage.getItem('shineAc'), bad: setAircraftType('xx', false) }; });
   t.ok(P.a === 'aw189' && P.b === 'b206' && P.bad === false, '기종 고르기는 localStorage(shineAc)에 적힌다 · 없는 기종은 거절');

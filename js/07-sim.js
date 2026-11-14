@@ -1008,7 +1008,16 @@ function applyPanels() {
   const sysMapHost = () => { try { return (typeof sysMapSlot === 'function' && (ckC('sysp', 'pop') || hostOf0('sysp'))) ? sysMapSlot() : null; } catch (e) { return null; } };
   // SIM 3D 조종석(15-heli3d.js) — 콘솔 팝아웃(LowerC · UpperC)은 무엇보다 먼저, 조종석 안의 작은 콘솔은 다른 창에 없을 때만
   const ckC = (k, ph) => { try { return typeof ckpitConsoleHost === 'function' ? ckpitConsoleHost(k, ph) : null; } catch (e) { return null; } };
-  const hostOf = k => ckC(k, 'pop') || hostOf0(k) || (k === 'map' ? sysMapHost() : null) || ckC(k, 'mini');
+  // 분할 화면의 창(L · M · R · B)이 지금 보이지 않으면(Cockpit 모드 등 단독 화면으로 #app 이 숨음) 조종석 안의 작은 콘솔이 먼저다 —
+  // 오른쪽 창에 UPPER 를 띄운 채 Cockpit 모드로 들어가면 상부 콘솔이 숨은 창에 남아 조종석 칸이 검게 비었다
+  const _vis = el => !!el && el.getClientRects().length > 0;
+  const hostOf = k => {
+    const pop = ckC(k, 'pop'); if (pop) return pop;
+    let h = hostOf0(k);
+    const mini = ckC(k, 'mini');
+    if (h && mini && [L, M, R, B].includes(h) && !_vis(h)) h = null;
+    return h || (k === 'map' ? sysMapHost() : null) || mini;
+  };
   ['pfd', 'map', 'cdu', 'm3d', 'plan', 'ovhd', 'sysp', 'lcon'].forEach(k => {
     const el = document.getElementById(wrapIds[k]);
     if (!el) return;
