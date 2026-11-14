@@ -16,6 +16,16 @@
 - `js/00-edition.js` — 주소에 `flightsimulator` 가 없으므로 이 저장소는 늘 **full 판(SIM 모드 있음)** 으로 뜬다.
   절차 훈련판(proc) 관련 코드는 남아 있지만 이 저장소에서는 쓰지 않는다(정리해도 된다).
 
+## 기종(aircraft type)
+- `js/00-aircraft.js` — `AC_TYPE`: **`b206`(Bell 206B-3 · 기본)** · `aw189`(흰수리 · shinesong 의 유리 조종석).
+  고르는 길: 시작 화면 기종 버튼(00-gate.js) · 주소 `?ac=b206|aw189` · localStorage `shineAc`. 다른 파일은 `acIs('b206')` 로 가른다.
+- `js/25-b206panel.js` — Bell 206 아날로그 계기판(`b206Draw` · `b206DrawTo`). PFD 창(03-pfd.js drawPFD)과
+  Cockpit 모드 계기판 자리(15-heli3d.js CKPIT_SCR `k:'b206'`)에 그린다.
+- 진행 계획: ① 아날로그 계기판(완료) → ② GNS 430 CDU → ③ 하부 콘솔(오디오 · COMM · NAV · ADF · XPDR · SRCH/LDG LT · STARTER)
+  · 상부 콘솔 → ④ 비행 모델(단발 · 206 한계) → ⑤ 비행 연습 과목.
+- 검사: 기존 검사는 **AW189 로 뜬다**(tests/lib/env.mjs `AC` 기본 aw189). Bell 206 검사는 `tests/cases/b206.mjs`('Bell 206').
+  모두 Bell 206 으로 돌려 보려면 `AC=b206 node tests/run.mjs '<이름>'`.
+
 ## 항상 따를 규칙
 
 ### 작업 단위 완료 시 Push + PR
